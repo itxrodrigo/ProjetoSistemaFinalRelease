@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma de Viagens - Concept Cargo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <!-- Firebase App (core) -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script> -->
+    <!-- Firebase Auth -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #793115 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(177, 93, 93, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, #000000 0%, #333333 100%);
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .main-title {
+            color: white;
+            font-size: 36px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .main-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 3px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: none;
+            background: transparent;
+        }
+
+        .tab.origem,
+        .tab.destino {
+            color: #ff6b00;
+            border-bottom: 4px solid transparent;
+        }
+
+        .tab.origem.active,
+        .tab.destino.active {
+            background: linear-gradient(135deg, #fff5f2 0%, #ffe8e0 100%);
+            color: #ff6b00;
+            border-bottom: 4px solid #ff6b00;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .header {
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header.origem,
+        .header.destino {
+            background: linear-gradient(135deg, #000000 0%, #ff6b00 100%);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            transform: skewX(-20deg);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .logo-icon.origem,
+        .logo-icon.destino {
+            color: #ff6b00;
+        }
+
+        .company-name {
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .file-upload {
+            position: relative;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-upload:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .file-upload input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .date-display {
+            background: white;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .date-display.origem,
+        .date-display.destino {
+            color: #ff6b00;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .table-header.origem,
+        .table-header.destino {
+            background: linear-gradient(135deg, #ff6b00 0%, #ff9000 100%);
+        }
+
+        .table-header th {
+            padding: 20px 15px;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 14px;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .table-header th:last-child {
+            border-right: none;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            transform: scale(1.01);
+        }
+
+        .origem tbody tr:hover,
+        .destino tbody tr:hover {
+            background: linear-gradient(135deg, #fff5f2 0%, #ffe8e0 100%);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        td {
+            padding: 20px 15px;
+            text-align: center;
+            font-weight: 500;
+            color: #333;
+            position: relative;
+        }
+
+        .route {
+            font-weight: 700;
+            font-size: 16px;
+            color: #2c3e50;
+            letter-spacing: 1px;
+        }
+
+        .time {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            font-size: 16px;
+            color: #34495e;
+        }
+
+        .status {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .status-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+            animation: pulse-status 2s infinite;
+        }
+
+        .status-icon.warning {
+            background: linear-gradient(135deg, #ff9000 0%, #ff6b00 100%);
+            box-shadow: 0 4px 15px rgba(255, 144, 0, 0.4);
+        }
+
+        .status-icon.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(46, 204, 113, 0.7); }
+            100% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+        }
+
+        @keyframes pulse-status {
+            0% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(46, 204, 113, 0.7); }
+            100% { box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); }
+        }
+
+        .footer {
+            background: #020202;
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            background: #ff6b00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .template-download {
+            margin-top: 20px;
+        }
+
+        .template-btn {
+            background: #ff6b00;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .template-btn:hover {
+            background: #e55a00;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .main-title {
+                font-size: 24px;
+            }
+            
+            .tab {
+                font-size: 14px;
+                padding: 15px 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .company-name {
+                font-size: 24px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .table-container {
+                padding: 15px;
+            }
+            
+            .footer {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                max-width: 100vw;
+                padding: 0;
+            }
+            .main-header {
+                padding: 10px 5px;
+            }
+            .main-title {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
+            .main-subtitle {
+                font-size: 12px;
+            }
+            .tab {
+                font-size: 12px;
+                padding: 10px 2px;
+            }
+            .header {
+                padding: 10px;
+            }
+            .company-name {
+                font-size: 16px;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 6px;
+                margin-top: 10px;
+            }
+            .file-upload, .date-display {
+                width: 100%;
+                font-size: 14px;
+                padding: 8px 10px;
+            }
+            .table-container {
+                padding: 5px;
+            }
+            table, th, td {
+                font-size: 12px;
+                padding: 8px 4px;
+            }
+            .footer {
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px 5px;
+                font-size: 12px;
+            }
+            .logo-header-img {
+                height: 32px;
+                padding: 2px;
+            }
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            .empty-state {
+                padding: 30px 5px;
+            }
+            .template-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        .logo-header-img {
+            height: 48px;
+            width: auto;
+            /* background: white; */   /* Removido para manter transparência */
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        @media print {
+            body {
+                background: linear-gradient(135deg, #1a1a1a 0%, #793115 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .container {
+                background: white !important;
+            }
+            .main-header {
+                background: linear-gradient(135deg, #000000 0%, #333333 100%) !important;
+            }
+            .header.origem {
+                background: linear-gradient(135deg, #000000 0%, #3a3937 100%) !important;
+            }
+            .header.destino {
+                background: linear-gradient(135deg, #000000 0%, #ff6b35 100%) !important;
+            }
+            .table-header.origem {
+                background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+            }
+            .table-header.destino {
+                background: linear-gradient(135deg, #ff6b00 0%, #ff9000 100%) !important;
+            }
+            /* Adicione outros elementos conforme necessário */
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #fff5f2; position: fixed; top:0; left:0; width:100vw; height:100vh; z-index: 9999;">
+        <div style="background: white; padding: 32px 24px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); min-width: 320px;">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 18px;">
+                <div style="background: #222; border-radius: 12px; padding: 8px; margin-bottom: 10px;">
+                    <img src="imagens/logo-light.png" alt="Logo Concept Cargo" style="height: 56px;">
+                </div>
+                <div style="color: #ff6b00; font-size: 22px; font-weight: bold; text-align: center;">
+                    Sistema Unificado de Cronograma de Viagens
+                </div>
+            </div>
+            <h2 style="color: #ff6b00; text-align: center; margin-bottom: 18px;">Login</h2>
+            <input id="login-email" type="email" placeholder="E-mail" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #ddd;">
+            <input id="login-password" type="password" placeholder="Senha" style="width: 100%; padding: 10px; margin-bottom: 16px; border-radius: 6px; border: 1px solid #ddd;">
+            <button id="login-btn" style="width: 100%; background: #ff6b00; color: white; border: none; border-radius: 6px; padding: 10px; font-weight: bold; cursor: pointer;">Entrar</button>
+            <div id="login-error" style="color: #e74c3c; margin-top: 10px; text-align: center; display: none;"></div>
+        </div>
+    </div>
+    <div class="container" style="display:none;">
+        <div class="main-header">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 18px;">
+                <img src="imagens/logo-light.png" alt="Logo Concept Cargo" class="logo-header-img">
+                <div>
+                    <div class="main-title"></div>
+                    <div class="main-subtitle">Sistema Unificado de Cronograma de Viagens</div>
+                </div>
+            </div>
+            <button id="logout-btn" style="position:absolute;top:20px;right:20px;background:#ff6b00;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;z-index:10;">Sair</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab origem active" onclick="switchTab('origem')">
+                🚚 ORIGEM SP
+            </button>
+            <button class="tab destino" onclick="switchTab('destino')">
+                🏢 DESTINO SP
+            </button>
+        </div>
+
+        <!-- Aba Origem SP -->
+        <div id="origem" class="tab-content active">
+            <div class="header origem">
+                <div class="logo">
+                    <div class="logo-icon origem">🚚</div>
+                    <div class="company-name">Origem SP</div>
+                </div>
+                <div class="controls">
+                    <div class="file-upload">
+                        <span>📊</span>
+                        <span>Carregar Planilha</span>
+                        <input type="file" id="fileInputOrigem" accept=".xlsx,.xls,.csv">
+                    </div>
+                    <input type="date" id="currentDateOrigem" class="date-display origem">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span id="statusTextOrigem">Aguardando dados...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingOrigem">
+                <div class="spinner"></div>
+                Processando planilha...
+            </div>
+
+            <div class="table-container">
+                <div class="empty-state" id="emptyStateOrigem">
+                    <div class="empty-state-icon">🚐</div>
+                    <h3>Nenhuma viagem carregada - Origem SP</h3>
+                    <p>Carregue uma planilha Excel ou CSV para visualizar as viagens</p>
+                    <div class="template-download">
+                        <button class="template-btn" onclick="downloadTemplate('origem')">
+                            📥 Baixar Modelo de Planilha
+                        </button>
+                    </div>
+                </div>
+
+                <table id="flightTableOrigem" style="display: none;" class="origem">
+                    <thead class="table-header origem">
+                        <tr>
+                            <th>TRECHO</th>
+                            <th>PREVISÃO</th>
+                            <th>CHEGADA</th>
+                            <th>DISPONIBILIDADE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyOrigem">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aba Destino SP -->
+        <div id="destino" class="tab-content">
+            <div class="header destino">
+                <div class="logo">
+                    <div class="logo-icon destino">🏢</div>
+                    <div class="company-name">Destino SP</div>
+                </div>
+                <div class="controls">
+                    <div class="file-upload">
+                        <span>📊</span>
+                        <span>Carregar Planilha</span>
+                        <input type="file" id="fileInputDestino" accept=".xlsx,.xls,.csv">
+                    </div>
+                    <input type="date" id="currentDateDestino" class="date-display destino">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span id="statusTextDestino">Aguardando dados...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loadingDestino">
+                <div class="spinner"></div>
+                Processando planilha...
+            </div>
+
+            <div class="table-container">
+                <div class="empty-state" id="emptyStateDestino">
+                    <div class="empty-state-icon">🚐</div>
+                    <h3>Nenhuma viagem carregada - Destino SP</h3>
+                    <p>Carregue uma planilha Excel ou CSV para visualizar as viagens</p>
+                    <div class="template-download">
+                        <button class="template-btn" onclick="downloadTemplate('destino')">
+                            📥 Baixar Modelo de Planilha
+                        </button>
+                    </div>
+                </div>
+
+                <table id="flightTableDestino" style="display: none;" class="destino">
+                    <thead class="table-header destino">
+                        <tr>
+                            <th>TRECHO</th>
+                            <th>PREVISÃO</th>
+                            <th>CHEGADA</th>
+                            <th>DISPONIBILIDADE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyDestino">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <span>(11) 2925-8174</span>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🌐</div>
+                    <span>conceptcargo.com.br</span>
+                </div>
+            </div>
+            <div class="contact-item">
+                <span id="lastUpdate">Última atualização: --</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Substitua Firebase por Supabase
+        const SUPABASE_URL = 'https://gcyromperahcnppmtfyo.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdjeXJvbXBlcmFoY25wcG10ZnlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwNTc3OTAsImV4cCI6MjA2NDYzMzc5MH0.n4fETYb0s_24p31Xv8pZFqNTUWs0bx2QNum04V1p8Kg';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Sempre faz logout ao abrir a página
+        // supabase.auth.signOut();
+
+        // Referências
+        const loginContainer = document.getElementById('login-container');
+        const mainContainer = document.querySelector('.container');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+
+        // Login
+        loginBtn.onclick = async function() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            loginError.style.display = 'none';
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                // Mostra mensagem detalhada do Supabase
+                loginError.textContent = error.message || 'Usuário ou senha inválidos.';
+                loginError.style.display = 'block';
+            } else {
+                loginContainer.style.display = 'none';
+                mainContainer.style.display = '';
+            }
+        };
+
+        // Mantém usuário logado
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                loginContainer.style.display = 'none';
+                mainContainer.style.display = '';
+            } else {
+                loginContainer.style.display = 'flex';
+                mainContainer.style.display = 'none';
+            }
+        });
+
+        // Logout automático ao abrir a página
+        // supabase.auth.signOut();
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const dateString = today.getFullYear() + '-' + 
+                              String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                              String(today.getDate()).padStart(2, '0');
+            
+            document.getElementById('currentDateOrigem').value = dateString;
+            document.getElementById('currentDateDestino').value = dateString;
+
+            // Event listeners para upload de arquivos
+            document.getElementById('fileInputOrigem').addEventListener('change', (e) => handleFile(e, 'origem'));
+            document.getElementById('fileInputDestino').addEventListener('change', (e) => handleFile(e, 'destino'));
+        });
+
+        function switchTab(tabName) {
+            // Remover classe active de todas as abas
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Ativar aba selecionada
+            document.querySelector(`.tab.${tabName}`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function handleFile(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading(true, type);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let data;
+                    
+                    if (file.name.endsWith('.csv')) {
+                        const csv = e.target.result;
+                        const parsed = Papa.parse(csv, {
+                            header: false,
+                            skipEmptyLines: true,
+                            dynamicTyping: true
+                        });
+                        data = parsed.data;
+                    } else {
+                        const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        data = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                    }
+                    
+                    processFlightData(data, type);
+                    updateStatus(`✅ ${data.length - 1} Viagens carregadas`, 'success', type);
+                    
+                } catch (error) {
+                    console.error('Erro ao processar arquivo:', error);
+                    updateStatus('❌ Erro ao processar arquivo', 'error', type);
+                } finally {
+                    showLoading(false, type);
+                }
+            };
+            
+            if (file.name.endsWith('.csv')) {
+                reader.readAsText(file);
+            } else {
+                reader.readAsBinaryString(file);
+            }
+        }
+
+        function processFlightData(data, type) {
+            const tableBody = document.getElementById(`tableBody${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const flightTable = document.getElementById(`flightTable${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            const emptyState = document.getElementById(`emptyState${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            
+            tableBody.innerHTML = '';
+            
+            const startRow = data[0] && typeof data[0][0] === 'string' && 
+                             (data[0][0].toLowerCase().includes('trecho') || 
+                              data[0][0].toLowerCase().includes('route')) ? 1 : 0;
+            
+            for (let i = startRow; i < data.length; i++) {
+                const row = data[i];
+                if (!row || !row[0]) continue;
+                
+                const tr = document.createElement('tr');
+                
+                const tdRoute = document.createElement('td');
+                tdRoute.className = 'route';
+                tdRoute.textContent = row[0] || '';
+                tr.appendChild(tdRoute);
+                
+                const tdPrevisao = document.createElement('td');
+                tdPrevisao.className = 'time';
+                tdPrevisao.textContent = formatTime(row[1]) || '';
+                tr.appendChild(tdPrevisao);
+                
+                const tdChegada = document.createElement('td');
+                tdChegada.className = 'time';
+                tdChegada.textContent = formatTime(row[2]) || '';
+                tr.appendChild(tdChegada);
+                
+                const tdDisponibilidade = document.createElement('td');
+                tdDisponibilidade.className = 'time';
+                tdDisponibilidade.textContent = formatTime(row[3]) || '';
+                tr.appendChild(tdDisponibilidade);
+                
+                const tdStatus = document.createElement('td');
+                tdStatus.className = 'status';
+                const statusIcon = createStatusIcon(row[4]);
+                tdStatus.appendChild(statusIcon);
+                tr.appendChild(tdStatus);
+                
+                tableBody.appendChild(tr);
+            }
+            
+            emptyState.style.display = 'none';
+            flightTable.style.display = 'table';
+            
+            document.getElementById('lastUpdate').textContent = 
+                `Última atualização: ${new Date().toLocaleString('pt-BR')}`;
+        }
+
+        function formatTime(timeValue) {
+            if (!timeValue) return '';
+            
+            const str = timeValue.toString().toLowerCase();
+            
+            if (str.includes(':') || str.includes('h')) {
+                return timeValue;
+            }
+            
+            if (typeof timeValue === 'number' && timeValue < 1) {
+                const totalMinutes = Math.round(timeValue * 24 * 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+            }
+            
+            return timeValue;
+        }
+
+        function createStatusIcon(status) {
+            const icon = document.createElement('div');
+            icon.className = 'status-icon';
+            
+            if (!status) {
+                icon.textContent = '✓';
+                return icon;
+            }
+            
+            const statusStr = status.toString().toLowerCase();
+            
+            if (statusStr.includes('ok') || statusStr.includes('confirmado') || statusStr.includes('confirmada') || statusStr.includes('normal')) {
+                icon.textContent = '✓';
+            } else if (statusStr.includes('atraso') || statusStr.includes('delay') || statusStr.includes('atrasado') || statusStr.includes('atrasada')) {
+                icon.className += ' warning';
+                icon.textContent = '⚠';
+            } else if (statusStr.includes('cancelado') || statusStr.includes('cancelada') || statusStr.includes('cancel') || statusStr.includes('erro') || statusStr.includes('problema') || statusStr.includes('não') || statusStr.includes('nao')) {
+                icon.className += ' error';
+                icon.textContent = '✗';
+            } else {
+                icon.textContent = '✓';
+            }
+            
+            return icon;
+        }
+
+        function showLoading(show, type) {
+            const loading = document.getElementById(`loading${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            if (show) {
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
+            }
+        }
+
+        function updateStatus(message, statusType, type) {
+            const statusText = document.getElementById(`statusText${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            statusText.textContent = message;
+        }
+
+        function downloadTemplate(type) {
+            const templateData = [
+                ['Trecho', 'Previsão', 'Chegada', 'Disponibilidade', 'Status'],
+                ['SAO X BHZ', '08h00', '09:00:00', '10:00:00', 'CONFIRMADA'],
+                ['SAO X BSB', '16h00', '17:00:00', '19:45:00', 'CONFIRMADA'],
+                ['SAO X CPQ', '08h00', '02:00:00', '07:30:00', 'ATRASO'],
+                ['SAO X GYN', '16h00', '12:00:00', '14:00:00', 'CANCELADA']
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(templateData);
+            
+            ws['!cols'] = [
+                { width: 15 },
+                { width: 12 },
+                { width: 12 },
+                { width: 15 },
+                { width: 12 }
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Viagens');
+            XLSX.writeFile(wb, `Modelo_Cronograma_${type.charAt(0).toUpperCase() + type.slice(1)}_SP.xlsx`);
+        }
+
+        document.getElementById('logout-btn').onclick = async function() {
+            await supabase.auth.signOut();
+            loginContainer.style.display = 'flex';
+            mainContainer.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
