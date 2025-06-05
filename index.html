@@ -444,156 +444,57 @@
             100% { transform: rotate(360deg); }
         }
 
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            
-            .main-title {
-                font-size: 24px;
-            }
-            
-            .tab {
-                font-size: 14px;
-                padding: 15px 10px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            .company-name {
-                font-size: 24px;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .table-container {
-                padding: 15px;
-            }
-            
-            .footer {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .contact-info {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
+        /* Ajuste geral para o login-container */
+#login-container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a1a 0%, #793115 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+}
 
-        @media (max-width: 480px) {
-            .container {
-                margin: 0;
-                border-radius: 0;
-                box-shadow: none;
-                max-width: 100vw;
-                padding: 0;
-            }
-            .main-header {
-                padding: 10px 5px;
-            }
-            .main-title {
-                font-size: 18px;
-                letter-spacing: 2px;
-            }
-            .main-subtitle {
-                font-size: 12px;
-            }
-            .tab {
-                font-size: 12px;
-                padding: 10px 2px;
-            }
-            .header {
-                padding: 10px;
-            }
-            .company-name {
-                font-size: 16px;
-            }
-            .controls {
-                flex-direction: column;
-                gap: 6px;
-                margin-top: 10px;
-            }
-            .file-upload, .date-display {
-                width: 100%;
-                font-size: 14px;
-                padding: 8px 10px;
-            }
-            .table-container {
-                padding: 5px;
-            }
-            table, th, td {
-                font-size: 12px;
-                padding: 8px 4px;
-            }
-            .footer {
-                flex-direction: column;
-                gap: 8px;
-                padding: 10px 5px;
-                font-size: 12px;
-            }
-            .logo-header-img {
-                height: 32px;
-                padding: 2px;
-            }
-            .logo-icon {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-            }
-            .empty-state {
-                padding: 30px 5px;
-            }
-            .template-btn {
-                padding: 8px 12px;
-                font-size: 13px;
-            }
-        }
+/* Remove estilos inline do HTML e coloque aqui */
+#login-container > div:first-child {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a1a 0%, #793115 100%);
+}
+#login-container > div:first-child img {
+    max-width: 90vw;
+    max-height: 70vh;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+#login-container > div:last-child {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#login-container > div:last-child > div {
+    background: rgba(255,255,255,0.97);
+    padding: 40px 32px;
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.10);
+    min-width: 280px;
+    width: 100%;
+    max-width: 400px;
+}
 
-        .logo-header-img {
-            height: 48px;
-            width: auto;
-            /* background: white; */   /* Removido para manter transparência */
-            border-radius: 12px;
-            padding: 4px;
-        }
-
-        @media print {
-            body {
-                background: linear-gradient(135deg, #1a1a1a 0%, #793115 100%) !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .container {
-                background: white !important;
-            }
-            .main-header {
-                background: linear-gradient(135deg, #000000 0%, #333333 100%) !important;
-            }
-            .header.origem {
-                background: linear-gradient(135deg, #000000 0%, #3a3937 100%) !important;
-            }
-            .header.destino {
-                background: linear-gradient(135deg, #000000 0%, #ff6b35 100%) !important;
-            }
-            .table-header.origem {
-                background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
-            }
-            .table-header.destino {
-                background: linear-gradient(135deg, #ff6b00 0%, #ff9000 100%) !important;
-            }
-            /* Adicione outros elementos conforme necessário */
-        }
-
-        /* Responsividade para tela de login */
-        @media (max-width: 900px) {
+/* Responsividade para tablets e celulares */
+@media (max-width: 900px) {
     #login-container {
         flex-direction: column;
         padding: 0;
@@ -602,19 +503,25 @@
         position: static;
         width: 100vw;
     }
-    #login-container > div:first-child {
+    #login-container > div:first-child,
+    #login-container > div:last-child {
         width: 100% !important;
+        min-width: 0 !important;
+        flex: unset;
+    }
+    #login-container > div:first-child {
         min-height: 120px;
         justify-content: center !important;
         padding: 16px 0 0 0;
     }
     #login-container > div:first-child img {
-        max-width: 90vw !important;
+        max-width: 95vw !important;
         max-height: 120px !important;
         border-radius: 12px;
+        width: 100%;
+        height: auto;
     }
     #login-container > div:last-child {
-        width: 100% !important;
         justify-content: center !important;
         align-items: flex-start !important;
         padding: 0 0 24px 0;
@@ -626,89 +533,42 @@
         margin: 0 auto;
         padding: 16px 8px;
     }
-    .container {
-        max-width: 100vw;
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 0;
-    }
-    .main-header {
-        flex-direction: column;
-        padding: 10px 5px;
-    }
-    .main-title {
-        font-size: 22px;
-        letter-spacing: 2px;
-    }
-    .main-subtitle {
-        font-size: 13px;
-    }
-    .tab {
-        font-size: 13px;
-        padding: 10px 2px;
-    }
-    .header {
-        padding: 10px;
-    }
-    .company-name {
-        font-size: 18px;
-    }
-    .controls {
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 10px;
-    }
-    .file-upload, .date-display {
-        width: 100%;
-        font-size: 14px;
-        padding: 8px 10px;
-    }
-    .table-container {
-        padding: 5px;
-    }
-    table, th, td {
-        font-size: 12px;
-        padding: 8px 4px;
-    }
-    .footer {
-        flex-direction: column;
-        gap: 8px;
-        padding: 10px 5px;
-        font-size: 12px;
-    }
-    .logo-header-img {
-        height: 32px;
-        padding: 2px;
-    }
-    .logo-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-    }
-    .empty-state {
-        padding: 30px 5px;
-    }
-    .template-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-    }
 }
+
+/* Responsividade para celulares pequenos */
 @media (max-width: 480px) {
     #login-container > div:first-child img {
-        max-width: 90vw !important;
+        max-width: 98vw !important;
         max-height: 80px !important;
-        border-radius: 12px;
+        border-radius: 10px;
     }
     #login-container > div:last-child > div {
-        padding: 16px 4px;
+        padding: 12px 4px;
         border-radius: 10px;
     }
     #login-container {
         min-height: 100vh;
         height: 100vh;
     }
+    #login-container > div:last-child > div {
+        min-width: 0 !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+    }
+    #login-container input,
+    #login-container button {
+        font-size: 15px !important;
+        padding: 10px !important;
+    }
+    #login-container h2 {
+        font-size: 18px !important;
+    }
+    #login-container > div:last-child > div > div {
+        font-size: 16px !important;
+    }
 }
+
+/* ...existing code... */
     </style>
 </head>
 <body>
